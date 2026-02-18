@@ -1,17 +1,17 @@
 
 # Tutor CRM
 
-A Customer Relationship Management (CRM) application designed for tutors to manage their students, lessons, and schedules effectively.
+A Customer Relationship Management (CRM) application designed for tutors to manage their students, lessons, and schedules effectively. This is a full-stack application with a React frontend, a Node.js/Express backend, and a PostgreSQL database.
 
 ## Features
 
-- **Authentication**: Secure login and registration for tutors.
-- **Weekly Calendar**: A clear, interactive weekly view of all scheduled lessons.
+- **Authentication**: Secure login and registration for tutors, powered by a JWT-based backend.
+- **Weekly Calendar**: A clear, interactive weekly view of all scheduled lessons fetched from the database.
 - **Lesson Management**:
   - **Create**: Easily add new one-time or recurring lessons.
   - **View/Edit**: Click on any lesson to view details, add notes, or make changes.
   - **Delete**: Remove a single lesson instance or an entire recurring series.
-- **Lesson Tracking**: Automatically increment lesson numbers after completion.
+- **Persistent Data**: All data is stored in a PostgreSQL database, making it a true multi-user ready application.
 - **Quick Actions**: 
   - Hover over empty slots to quickly add a new lesson.
   - Quick access to student/parent Telegram contacts.
@@ -21,33 +21,30 @@ A Customer Relationship Management (CRM) application designed for tutors to mana
 
 - **Frontend**: React 18+ with TypeScript
 - **Styling**: Tailwind CSS
-- **State Management**: React Hooks (useState, useContext)
-- **Backend (Simulated)**: The current version uses a mock API that persists data to the browser's `localStorage`. This simulates how the frontend would interact with a real backend.
-- **Database (Placeholder)**: The `docker-compose.yml` includes a service definition for a PostgreSQL database, which would be used in a full-stack implementation.
+- **Backend**: Node.js with Express.js and TypeScript
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Containerization**: Docker & Docker Compose
 
 ## Project Structure
 
 ```
 .
-├── components/         # Reusable React components
-│   ├── Calendar.tsx
-│   ├── LessonCard.tsx
-│   └── LessonModal.tsx
-├── hooks/              # Custom React hooks
-│   └── useAuth.tsx
-├── pages/              # Page components
-│   ├── CalendarPage.tsx
-│   └── LoginPage.tsx
-├── services/           # API interaction logic
-│   └── api.ts          # (Currently a mock API using localStorage)
-├── utils/              # Utility functions
-│   └── dateUtils.ts
-├── App.tsx             # Main application component
-├── index.html          # Main HTML entry point
-├── index.tsx           # React application entry point
-├── types.ts            # TypeScript type definitions
-├── Dockerfile          # For building the frontend production image
-├── docker-compose.yml  # For orchestrating all services
+├── backend/            # Backend Node.js/Express application
+│   ├── prisma/
+│   ├── src/
+│   ├── Dockerfile
+│   └── package.json
+├── components/         # Frontend React components
+├── hooks/
+├── pages/
+├── services/           # Frontend API interaction logic
+│   └── api.ts
+├── App.tsx
+├── index.html
+├── Dockerfile          # Frontend Dockerfile (for Nginx)
+├── docker-compose.yml  # Orchestrates all services
+├── nginx.conf          # Nginx configuration
 └── README.md           # This file
 ```
 
@@ -59,7 +56,7 @@ A Customer Relationship Management (CRM) application designed for tutors to mana
 
 ### Deployment with Docker
 
-This is the recommended way to run the application as it mirrors a production environment.
+This is the recommended way to run the application as it orchestrates the frontend, backend, and database together.
 
 1.  **Clone the repository:**
     ```bash
@@ -71,55 +68,20 @@ This is the recommended way to run the application as it mirrors a production en
     ```bash
     docker-compose up --build
     ```
-    This command will build the frontend Docker image and start the container.
+    This command will:
+    - Build the frontend Docker image (with Nginx).
+    - Build the backend Docker image.
+    - Pull the PostgreSQL image.
+    - Start all three containers and connect them.
 
 3.  **Access the application:**
     Open your web browser and navigate to `http://localhost:8080`.
 
-### Local Development (Without Docker)
+The first time you run the backend, Prisma will automatically apply the necessary database migrations to set up the tables.
 
-To run the frontend locally for development, you will need Node.js and a package manager (npm/yarn).
-
-*Note: This project was generated without a `package.json` or build tool like Vite/CRA. To run it, you would need to set up a standard React development environment.*
-
-1.  **Set up a React project:**
-    You can use a tool like [Vite](https://vitejs.dev/) to quickly set up a React + TypeScript project.
-    ```bash
-    npm create vite@latest my-tutor-crm -- --template react-ts
-    ```
-
-2.  **Copy the source files:**
-    Copy all the `.tsx`, `.ts` files from this project into the `src` directory of your new Vite project. Replace the existing template files.
-
-3.  **Copy `index.html`:**
-    Copy the `index.html` from this project into the root of your Vite project, replacing the existing one.
-
-4.  **Install dependencies (if any):**
-    This project doesn't have external dependencies besides React, but a real project would.
-    ```bash
-    cd my-tutor-crm
-    npm install
-    ```
-
-5.  **Run the development server:**
-    ```bash
-    npm run dev
-    ```
-    The application will be available at the URL provided by Vite (usually `http://localhost:5173`).
-
-## Full-Stack Implementation Notes
-
-This project provides a fully functional frontend with a simulated backend. To make this a production-ready, multi-user application, the following steps are required:
-
-1.  **Build the Backend:**
-    - Create a backend application (e.g., using Node.js/Express, Python/Django, etc.).
-    - Implement API endpoints for user authentication (register, login) and CRUD operations for lessons.
-    - Connect the backend to the PostgreSQL database defined in `docker-compose.yml`.
-    - Implement password hashing and JWT (JSON Web Tokens) for security.
-
-2.  **Update the Frontend:**
-    - In `services/api.ts`, replace the `localStorage` logic with actual `fetch` or `axios` calls to your new backend API endpoints.
-
-3.  **Configure Docker Compose:**
-    - Uncomment and configure the `backend` and `db` services in the `docker-compose.yml` file.
-    - Ensure environment variables (like `DATABASE_URL`) are correctly set up.
+### Stopping the application
+To stop all services, press `Ctrl+C` in the terminal where `docker-compose` is running, and then run:
+```bash
+docker-compose down
+```
+This will stop and remove the containers. To remove the database volume as well (deleting all data), run `docker-compose down -v`.

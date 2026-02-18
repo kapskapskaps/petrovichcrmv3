@@ -1,157 +1,117 @@
 
-// This is a mock API using localStorage to simulate a real backend with a PostgreSQL database.
-// In a real application, these functions would make HTTP requests to a server.
+// This file is now configured to work with a real backend API.
+// The localStorage logic has been replaced with fetch requests.
 
 import { User, Lesson } from '../types';
 
-const USERS_KEY = 'tutor_crm_users';
-const LESSONS_KEY_PREFIX = 'tutor_crm_lessons_';
-const LOGGED_IN_USER_KEY = 'tutor_crm_logged_in_user';
+const API_BASE_URL = '/api'; // Using a relative URL, assumes proxy setup in dev or same host in prod
 
-// Helper to get lessons key for a user
-const getLessonsKey = (userId: string) => `${LESSONS_KEY_PREFIX}${userId}`;
+// A helper for making authenticated requests
+const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+  const token = localStorage.getItem('authToken');
+  const headers = new Headers({
+    'Content-Type': 'application/json',
+    ...options.headers,
+  });
 
-// Helper to read from localStorage
-const read = <T,>(key: string, defaultValue: T): T => {
-  try {
-    const item = window.localStorage.getItem(key);
-    return item ? JSON.parse(item) : defaultValue;
-  } catch (error) {
-    console.warn(`Error reading localStorage key "${key}":`, error);
-    return defaultValue;
+  if (token) {
+    headers.append('Authorization', `Bearer ${token}`);
   }
+
+  const response = await fetch(url, { ...options, headers });
+
+  if (!response.ok) {
+    // Try to parse the error message from the backend
+    const errorData = await response.json().catch(() => ({ message: 'Произошла непредвиденная ошибка.' }));
+    throw new Error(errorData.message || `Ошибка: ${response.status} ${response.statusText}`);
+  }
+  
+  if (response.status === 204) { // No Content
+    return;
+  }
+
+  return response.json();
 };
 
-// Helper to write to localStorage
-const write = (key: string, value: any) => {
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value));
-  } catch (error) {
-    console.warn(`Error writing to localStorage key "${key}":`, error);
-  }
-};
-
-const simulateDelay = (ms: number = 500) => new Promise(res => setTimeout(res, ms));
 
 export const api = {
   // --- AUTH ---
   async register(email: string, pass: string): Promise<User> {
-    await simulateDelay();
-    const users = read<User[]>(USERS_KEY, []);
-    if (users.some(u => u.email === email)) {
-      throw new Error('Пользователь с такой почтой уже существует.');
-    }
-    const newUser: User = { id: Date.now().toString(), email };
-    // In a real app, the password would be hashed. We'll just store the user without it.
-    users.push(newUser);
-    write(USERS_KEY, users);
-    write(LOGGED_IN_USER_KEY, newUser);
-    return newUser;
+    const { user, token } = await fetchWithAuth(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      body: JSON.stringify({ email, password: pass }),
+    });
+    if (!user || !token) throw new Error('Некорректный ответ от сервера при регистрации.');
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('tutor_crm_logged_in_user', JSON.stringify(user));
+    return user;
   },
 
   async login(email: string, pass: string): Promise<User> {
-    await simulateDelay();
-    const users = read<User[]>(USERS_KEY, []);
-    const user = users.find(u => u.email === email);
-    // Password check would happen on the server. Here we just check if user exists.
-    if (!user) {
-      throw new Error('Неверная почта или пароль.');
-    }
-    write(LOGGED_IN_USER_KEY, user);
+    const { user, token } = await fetchWithAuth(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        body: JSON.stringify({ email, password: pass }),
+    });
+    if (!user || !token) throw new Error('Некорректный ответ от сервера при входе.');
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('tutor_crm_logged_in_user', JSON.stringify(user));
     return user;
   },
 
   logout() {
-    window.localStorage.removeItem(LOGGED_IN_USER_KEY);
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('tutor_crm_logged_in_user');
+    // Optional: Inform the backend about logout
+    // fetchWithAuth(`${API_BASE_URL}/auth/logout`, { method: 'POST' }).catch(console.error);
   },
 
   getCurrentUser(): User | null {
-    return read<User | null>(LOGGED_IN_USER_KEY, null);
+    try {
+        const userJson = localStorage.getItem('tutor_crm_logged_in_user');
+        return userJson ? JSON.parse(userJson) : null;
+    } catch (e) {
+        console.warn("Could not parse user from localStorage", e);
+        return null;
+    }
   },
 
   // --- LESSONS ---
+  // Note: userId parameters are kept for compatibility with existing components, 
+  // but the backend should identify the user via the auth token.
   async createLesson(userId: string, lessonData: Omit<Lesson, 'id' | 'seriesId'>): Promise<Lesson[]> {
-    await simulateDelay();
-    const lessons = read<Lesson[]>(getLessonsKey(userId), []);
-    const createdLessons: Lesson[] = [];
-    const seriesId = Date.now().toString();
-
-    for (let i = 0; i < (lessonData.frequency || 1); i++) {
-        const lessonDate = new Date(lessonData.startTime);
-        lessonDate.setDate(lessonDate.getDate() + (i * 7 / (lessonData.frequency || 1)));
-
-        const newLesson: Lesson = {
-            ...lessonData,
-            id: `${seriesId}-${i}`,
-            seriesId,
-            startTime: lessonDate.toISOString(),
-        };
-        lessons.push(newLesson);
-        createdLessons.push(newLesson);
-    }
-    
-    write(getLessonsKey(userId), lessons);
-    return createdLessons;
+    return fetchWithAuth(`${API_BASE_URL}/lessons`, {
+        method: 'POST',
+        body: JSON.stringify(lessonData)
+    });
   },
 
   async getLessons(userId: string, start: Date, end: Date): Promise<Lesson[]> {
-    await simulateDelay();
-    const allLessons = read<Lesson[]>(getLessonsKey(userId), []);
-    const endDateWithTime = new Date(end);
-    endDateWithTime.setHours(23, 59, 59, 999); // Set to end of the day
-
-    return allLessons.filter(lesson => {
-      const lessonDate = new Date(lesson.startTime);
-      return lessonDate >= start && lessonDate <= endDateWithTime;
+    const params = new URLSearchParams({
+        start: start.toISOString(),
+        end: end.toISOString(),
     });
+    return fetchWithAuth(`${API_BASE_URL}/lessons?${params.toString()}`);
   },
 
   async updateLesson(userId: string, updatedLesson: Lesson): Promise<Lesson> {
-    await simulateDelay();
-    const lessons = read<Lesson[]>(getLessonsKey(userId), []);
-    const index = lessons.findIndex(l => l.id === updatedLesson.id);
-    if (index === -1) {
-      throw new Error('Урок не найден.');
-    }
-    lessons[index] = updatedLesson;
-    write(getLessonsKey(userId), lessons);
-    return updatedLesson;
+    return fetchWithAuth(`${API_BASE_URL}/lessons/${updatedLesson.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updatedLesson)
+    });
   },
 
   async deleteLesson(userId: string, lessonId: string, deleteAllInSeries: boolean): Promise<void> {
-    await simulateDelay();
-    let lessons = read<Lesson[]>(getLessonsKey(userId), []);
-    const lessonToDelete = lessons.find(l => l.id === lessonId);
-    if (!lessonToDelete) return;
-
-    if (deleteAllInSeries) {
-      lessons = lessons.filter(l => l.seriesId !== lessonToDelete.seriesId);
-    } else {
-      lessons = lessons.filter(l => l.id !== lessonId);
-    }
-    write(getLessonsKey(userId), lessons);
+     const params = new URLSearchParams({
+        series: String(deleteAllInSeries),
+    });
+    await fetchWithAuth(`${API_BASE_URL}/lessons/${lessonId}?${params.toString()}`, {
+        method: 'DELETE'
+    });
   },
 
   async markLessonAsComplete(userId: string, lessonId: string): Promise<void> {
-    await simulateDelay();
-    let lessons = read<Lesson[]>(getLessonsKey(userId), []);
-    const completedLesson = lessons.find(l => l.id === lessonId);
-    if (!completedLesson) return;
-
-    // Mark current lesson as complete
-    completedLesson.completed = true;
-
-    // Increment lesson number for all future lessons in the series
-    lessons = lessons.map(l => {
-        if (l.seriesId === completedLesson.seriesId && new Date(l.startTime) > new Date(completedLesson.startTime)) {
-            return { ...l, lessonNumber: l.lessonNumber + 1 };
-        }
-        if (l.id === lessonId) {
-            return completedLesson;
-        }
-        return l;
+    await fetchWithAuth(`${API_BASE_URL}/lessons/${lessonId}/complete`, {
+        method: 'POST'
     });
-
-    write(getLessonsKey(userId), lessons);
   }
 };
