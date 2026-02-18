@@ -1,5 +1,5 @@
 
-import { Request, Response } from 'express';
+import { Request as ExpressRequest, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
@@ -7,7 +7,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_default_secret';
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: ExpressRequest, res: Response) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -39,7 +39,7 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: ExpressRequest, res: Response) => {
   const { email, password } = req.body;
 
   if (!email || !password) {

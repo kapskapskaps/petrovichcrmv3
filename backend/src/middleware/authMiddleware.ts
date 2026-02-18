@@ -1,16 +1,15 @@
-
-import { Request as ExpressRequest, Response, NextFunction } from 'express';
+import * as express from 'express';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_default_secret';
 
-// Extend Express Request type to include 'user'
-// FIX: Aliased express 'Request' as 'ExpressRequest' during import and extended it here to resolve a naming conflict with the global Request type. This ensures the correct properties (`headers`, etc.) are available.
-interface AuthRequest extends ExpressRequest {
+// Extend express.Request to include the user property.
+// Using a namespace import `import * as express from 'express'` avoids conflicts with the global Request type.
+interface AuthRequest extends express.Request {
   user?: { userId: string };
 }
 
-export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authMiddleware = (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

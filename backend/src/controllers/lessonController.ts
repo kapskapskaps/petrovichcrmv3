@@ -1,17 +1,16 @@
-
-import { Request as ExpressRequest, Response } from 'express';
+import * as express from 'express';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
 const prisma = new PrismaClient();
 
-// Extend Request type to include user
-// FIX: Aliased express 'Request' as 'ExpressRequest' during import and extended it here to resolve a naming conflict with the global Request type. This ensures the correct properties (`body`, `query`, `params`, etc.) are available.
-interface AuthRequest extends ExpressRequest {
+// Extend express.Request to include the user property from auth middleware.
+// Using a namespace import `import * as express from 'express'` avoids conflicts with the global Request type.
+interface AuthRequest extends express.Request {
   user?: { userId: string };
 }
 
-export const getLessons = async (req: AuthRequest, res: Response) => {
+export const getLessons = async (req: AuthRequest, res: express.Response) => {
   const userId = req.user?.userId;
   const { start, end } = req.query;
 
@@ -37,7 +36,7 @@ export const getLessons = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const createLesson = async (req: AuthRequest, res: Response) => {
+export const createLesson = async (req: AuthRequest, res: express.Response) => {
     const userId = req.user?.userId;
     if (!userId) return res.status(401).json({ message: 'Не авторизован' });
 
@@ -91,7 +90,7 @@ export const createLesson = async (req: AuthRequest, res: Response) => {
     }
 };
 
-export const updateLesson = async (req: AuthRequest, res: Response) => {
+export const updateLesson = async (req: AuthRequest, res: express.Response) => {
   const userId = req.user?.userId;
   const { id } = req.params;
   const lessonData = req.body;
@@ -115,7 +114,7 @@ export const updateLesson = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const deleteLesson = async (req: AuthRequest, res: Response) => {
+export const deleteLesson = async (req: AuthRequest, res: express.Response) => {
   const userId = req.user?.userId;
   const { id } = req.params;
   const { series } = req.query;
@@ -148,7 +147,7 @@ export const deleteLesson = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const markLessonAsComplete = async (req: AuthRequest, res: Response) => {
+export const markLessonAsComplete = async (req: AuthRequest, res: express.Response) => {
     const userId = req.user?.userId;
     const { id } = req.params;
 
