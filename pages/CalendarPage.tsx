@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import Calendar from '../components/Calendar';
 import LessonModal from '../components/LessonModal';
@@ -16,8 +16,8 @@ const CalendarPage: React.FC = () => {
   const [modalInitialDate, setModalInitialDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const startOfWeek = getStartOfWeek(currentDate);
-  const endOfWeek = addDays(startOfWeek, 6);
+  const startOfWeek = useMemo(() => getStartOfWeek(currentDate), [currentDate]);
+  const endOfWeek = useMemo(() => addDays(startOfWeek, 6), [startOfWeek]);
 
   const fetchLessons = useCallback(async () => {
     if (!user) return;
