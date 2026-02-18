@@ -23,7 +23,7 @@ const Calendar: React.FC<CalendarProps> = ({ startOfWeek, lessons, onSelectLesso
       {/* Day headers */}
       {weekDays.map((day, index) => (
         <div key={index} className="sticky top-0 z-10 p-2 text-center bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
-          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">{day.toLocaleString('default', { weekday: 'short' })}</div>
+          <div className="text-sm font-medium text-gray-700 capitalize dark:text-gray-300">{day.toLocaleString('ru-RU', { weekday: 'short' })}</div>
           <div className="text-lg font-semibold text-gray-900 dark:text-white">{day.getDate()}</div>
         </div>
       ))}
@@ -54,6 +54,7 @@ const Calendar: React.FC<CalendarProps> = ({ startOfWeek, lessons, onSelectLesso
                          <button 
                             onClick={() => onSelectSlot(slotDate)} 
                             className="absolute inset-0 z-10 flex items-center justify-center text-2xl text-indigo-400 transition-opacity opacity-0 group-hover:opacity-100"
+                            aria-label={`Добавить урок на ${slotDate.toLocaleString('ru-RU')}`}
                         >
                             +
                         </button>

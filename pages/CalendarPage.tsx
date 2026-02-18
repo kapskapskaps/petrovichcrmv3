@@ -54,26 +54,26 @@ const CalendarPage: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen p-4 bg-gray-100 dark:bg-gray-900">
-      <header className="flex items-center justify-between pb-4">
+      <header className="flex flex-wrap items-center justify-between pb-4 gap-y-2">
         <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tutor CRM</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">CRM Репетитора</h1>
           <div className="flex items-center space-x-2">
             <button onClick={handlePrevWeek} className="px-3 py-1 bg-white border rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-600">&lt;</button>
             <button onClick={handleNextWeek} className="px-3 py-1 bg-white border rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-600">&gt;</button>
           </div>
           <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300">
-            {startOfWeek.toLocaleDateString()} - {endOfWeek.toLocaleDateString()}
+            {startOfWeek.toLocaleDateString('ru-RU', {day: 'numeric', month: 'long'})} - {endOfWeek.toLocaleDateString('ru-RU', {day: 'numeric', month: 'long', year: 'numeric'})}
           </h2>
         </div>
         <button onClick={logout} className="px-4 py-2 font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
-          Logout
+          Выйти
         </button>
       </header>
       
       <main className="flex-1 overflow-auto">
         {loading ? (
             <div className="flex items-center justify-center h-full">
-                <p>Loading...</p>
+                <p>Загрузка...</p>
             </div>
         ) : (
             <Calendar 
@@ -88,6 +88,7 @@ const CalendarPage: React.FC = () => {
       <button
         onClick={() => handleOpenModal()}
         className="fixed z-20 flex items-center justify-center w-16 h-16 text-3xl text-white bg-indigo-600 rounded-full shadow-lg bottom-10 right-10 hover:bg-indigo-700 focus:outline-none"
+        aria-label="Добавить новый урок"
       >
         +
       </button>

@@ -21,7 +21,7 @@ const LessonCard: React.FC<LessonCardProps> = ({ lesson, onClick, style }) => {
     >
       <p className="text-sm font-bold truncate">{lesson.studentName}</p>
       <p className="text-xs truncate">{lesson.course}</p>
-      <p className="text-xs truncate">Lesson #{lesson.lessonNumber}</p>
+      <p className="text-xs truncate">Урок №{lesson.lessonNumber}</p>
     </div>
   );
 };

@@ -39,7 +39,7 @@ export const api = {
     await simulateDelay();
     const users = read<User[]>(USERS_KEY, []);
     if (users.some(u => u.email === email)) {
-      throw new Error('User with this email already exists.');
+      throw new Error('Пользователь с такой почтой уже существует.');
     }
     const newUser: User = { id: Date.now().toString(), email };
     // In a real app, the password would be hashed. We'll just store the user without it.
@@ -55,7 +55,7 @@ export const api = {
     const user = users.find(u => u.email === email);
     // Password check would happen on the server. Here we just check if user exists.
     if (!user) {
-      throw new Error('Invalid email or password.');
+      throw new Error('Неверная почта или пароль.');
     }
     write(LOGGED_IN_USER_KEY, user);
     return user;
@@ -97,9 +97,12 @@ export const api = {
   async getLessons(userId: string, start: Date, end: Date): Promise<Lesson[]> {
     await simulateDelay();
     const allLessons = read<Lesson[]>(getLessonsKey(userId), []);
+    const endDateWithTime = new Date(end);
+    endDateWithTime.setHours(23, 59, 59, 999); // Set to end of the day
+
     return allLessons.filter(lesson => {
       const lessonDate = new Date(lesson.startTime);
-      return lessonDate >= start && lessonDate <= end;
+      return lessonDate >= start && lessonDate <= endDateWithTime;
     });
   },
 
@@ -108,7 +111,7 @@ export const api = {
     const lessons = read<Lesson[]>(getLessonsKey(userId), []);
     const index = lessons.findIndex(l => l.id === updatedLesson.id);
     if (index === -1) {
-      throw new Error('Lesson not found.');
+      throw new Error('Урок не найден.');
     }
     lessons[index] = updatedLesson;
     write(getLessonsKey(userId), lessons);

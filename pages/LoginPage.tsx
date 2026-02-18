@@ -22,7 +22,7 @@ const LoginPage: React.FC = () => {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('An unexpected error occurred.');
+        setError('Произошла непредвиденная ошибка.');
       }
     }
   };
@@ -32,14 +32,14 @@ const LoginPage: React.FC = () => {
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-lg dark:bg-gray-800">
         <div>
           <h2 className="text-3xl font-extrabold text-center text-gray-900 dark:text-white">
-            {isLogin ? 'Sign in to your account' : 'Create a new account'}
+            {isLogin ? 'Вход в аккаунт' : 'Создание нового аккаунта'}
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && <p className="text-sm text-center text-red-500">{error}</p>}
           <div className="space-y-4 rounded-md shadow-sm">
             <div>
-              <label htmlFor="email-address" className="sr-only">Email address</label>
+              <label htmlFor="email-address" className="sr-only">Эл. почта</label>
               <input
                 id="email-address"
                 name="email"
@@ -47,13 +47,13 @@ const LoginPage: React.FC = () => {
                 autoComplete="email"
                 required
                 className="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                placeholder="Email address"
+                placeholder="Эл. почта (например, user@example.com)"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">Password</label>
+              <label htmlFor="password" className="sr-only">Пароль</label>
               <input
                 id="password"
                 name="password"
@@ -61,7 +61,7 @@ const LoginPage: React.FC = () => {
                 autoComplete="current-password"
                 required
                 className="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                placeholder="Password"
+                placeholder="Пароль"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -73,7 +73,7 @@ const LoginPage: React.FC = () => {
               type="submit"
               className="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md group hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              {isLogin ? 'Sign in' : 'Register'}
+              {isLogin ? 'Войти' : 'Зарегистрироваться'}
             </button>
           </div>
         </form>
@@ -82,7 +82,7 @@ const LoginPage: React.FC = () => {
             onClick={() => setIsLogin(!isLogin)}
             className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
           >
-            {isLogin ? 'Need an account? Register' : 'Already have an account? Sign in'}
+            {isLogin ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
           </button>
         </div>
       </div>

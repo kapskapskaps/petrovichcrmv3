@@ -83,13 +83,13 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, initialDate, onClose 
         }
         onClose();
     } catch (error) {
-        console.error("Failed to save lesson", error);
+        console.error("Не удалось сохранить урок", error);
     }
   };
 
   const handleDelete = async (deleteAll: boolean) => {
     if (!lesson || !user) return;
-    if (window.confirm(`Are you sure you want to delete ${deleteAll ? 'all lessons in this series' : 'this lesson'}?`)) {
+    if (window.confirm(`Вы уверены, что хотите удалить ${deleteAll ? 'всю серию уроков' : 'этот урок'}?`)) {
         await api.deleteLesson(user.id, lesson.id, deleteAll);
         onClose();
     }
@@ -101,7 +101,7 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, initialDate, onClose 
     onClose();
   };
 
-  const renderField = (label: string, name: keyof Lesson, type: string = "text", required: boolean = true) => (
+  const renderField = (label: string, name: keyof Lesson, type: string = "text", placeholder: string = '', required: boolean = true) => (
     <div>
       <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
       {type === 'textarea' ? (
@@ -112,6 +112,7 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, initialDate, onClose 
             readOnly={!isEditing}
             className="w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500"
             rows={3}
+            placeholder={placeholder}
         />
       ) : (
         <input
@@ -123,12 +124,13 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, initialDate, onClose 
             readOnly={!isEditing}
             className="w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 disabled:bg-gray-200 dark:disabled:bg-gray-700"
             disabled={!isEditing}
+            placeholder={placeholder}
         />
       )}
     </div>
   );
 
-  const renderContactField = (label: string, name: keyof Lesson) => (
+  const renderContactField = (label: string, name: keyof Lesson, placeholder: string = '') => (
     <div>
         <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
         <div className="flex items-center space-x-2">
@@ -140,12 +142,14 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, initialDate, onClose 
                 required
                 readOnly={!isEditing}
                 className="flex-grow p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500"
+                placeholder={placeholder}
             />
             <a 
                 href={`https://t.me/+${cleanPhoneNumber((formData[name] as string) || '')}`} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={(formData[name] ? 'opacity-100' : 'opacity-50 pointer-events-none')}
+                aria-label="Открыть в Telegram"
             >
                 <TelegramIcon />
             </a>
@@ -157,22 +161,22 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, initialDate, onClose 
     <div className="fixed inset-0 z-30 flex items-center justify-center bg-black bg-opacity-50">
       <div className="w-full max-w-2xl p-6 bg-white rounded-lg shadow-xl dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-3 border-b dark:border-gray-600">
-          <h2 className="text-2xl font-bold">{lesson ? 'Lesson Details' : 'Create Lesson'}</h2>
+          <h2 className="text-2xl font-bold">{lesson ? 'Детали урока' : 'Создать урок'}</h2>
           {lesson && !isEditing && (
-              <button onClick={() => setIsEditing(true)} className="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600">Edit</button>
+              <button onClick={() => setIsEditing(true)} className="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600">Изменить</button>
           )}
-          <button onClick={onClose} className="text-2xl">&times;</button>
+          <button onClick={onClose} className="text-2xl" aria-label="Закрыть">&times;</button>
         </div>
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {renderField('Student Name', 'studentName')}
-            {renderField('Parent Name', 'parentName')}
-            {renderContactField('Student Contact', 'studentContact')}
-            {renderContactField('Parent Contact', 'parentContact')}
-            {renderField('Course', 'course')}
-            {renderField('Lesson Number', 'lessonNumber', 'number')}
+            {renderField('Имя ученика', 'studentName', 'text', 'например, Иван Петров')}
+            {renderField('Имя родителя', 'parentName', 'text', 'например, Анна Петрова')}
+            {renderContactField('Контакт ученика (телефон/логин)', 'studentContact', 'например, 79123456789')}
+            {renderContactField('Контакт родителя (телефон/логин)', 'parentContact', 'например, 79987654321')}
+            {renderField('Курс/Предмет', 'course', 'text', 'например, Математика (10 класс)')}
+            {renderField('Номер урока', 'lessonNumber', 'number')}
             <div>
-              <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Date and Time</label>
+              <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Дата и время</label>
               <input
                 type="datetime-local"
                 name="startTime"
@@ -184,7 +188,7 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, initialDate, onClose 
               />
             </div>
             <div>
-              <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Duration</label>
+              <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Длительность</label>
               <select
                 name="durationMinutes"
                 value={formData.durationMinutes}
@@ -192,14 +196,14 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, initialDate, onClose 
                 disabled={!isEditing}
                 className="w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 disabled:bg-gray-200 dark:disabled:bg-gray-700"
               >
-                <option value={45}>45 minutes</option>
-                <option value={60}>60 minutes</option>
-                <option value={90}>90 minutes</option>
+                <option value={45}>45 минут</option>
+                <option value={60}>60 минут</option>
+                <option value={90}>90 минут</option>
               </select>
             </div>
             {!lesson && (
               <div>
-                <label className="block mb-1 text-sm font-medium">Frequency (per week)</label>
+                <label className="block mb-1 text-sm font-medium">Частота (в неделю)</label>
                 <input
                   type="number"
                   name="frequency"
@@ -212,24 +216,26 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, initialDate, onClose 
               </div>
             )}
             <div className="md:col-span-2">
-                {renderField('Description (Notes)', 'description', 'textarea')}
+                {renderField('Описание (заметки)', 'description', 'textarea', 'например, Прошли тему логарифмов. Задание на дом...', false)}
             </div>
           </div>
           
-          <div className="flex flex-wrap justify-between pt-4 mt-4 border-t dark:border-gray-600">
+          <div className="flex flex-wrap items-center justify-between pt-4 mt-4 border-t gap-y-2 dark:border-gray-600">
             {lesson && (
-              <div className="flex space-x-2">
-                <button type="button" onClick={handleMarkAsComplete} className="px-4 py-2 text-white bg-green-600 rounded-md hover:bg-green-700">Mark as Complete</button>
-                <button type="button" onClick={() => handleDelete(false)} className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700">Delete Lesson</button>
-                {lesson.frequency > 1 && <button type="button" onClick={() => handleDelete(true)} className="px-4 py-2 text-white bg-red-800 rounded-md hover:bg-red-900">Delete Series</button>}
+              <div className="flex flex-wrap space-x-2 gap-y-2">
+                <button type="button" onClick={handleMarkAsComplete} className="px-4 py-2 text-white bg-green-600 rounded-md hover:bg-green-700">Отметить как пройденный</button>
+                <button type="button" onClick={() => handleDelete(false)} className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700">Удалить урок</button>
+                {lesson.frequency > 1 && <button type="button" onClick={() => handleDelete(true)} className="px-4 py-2 text-white bg-red-800 rounded-md hover:bg-red-900">Удалить серию</button>}
               </div>
             )}
-            {isEditing && (
-              <div className="flex ml-auto space-x-2">
-                <button type="button" onClick={lesson ? () => setIsEditing(false) : onClose} className="px-4 py-2 bg-gray-300 rounded-md dark:bg-gray-600">Cancel</button>
-                <button type="submit" className="px-4 py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700">Save</button>
-              </div>
-            )}
+            <div className={`flex space-x-2 ${lesson ? 'ml-auto' : 'w-full justify-end'}`}>
+              {isEditing && (
+                <>
+                  <button type="button" onClick={lesson ? () => setIsEditing(false) : onClose} className="px-4 py-2 bg-gray-300 rounded-md dark:bg-gray-600">Отмена</button>
+                  <button type="submit" className="px-4 py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700">Сохранить</button>
+                </>
+              )}
+            </div>
           </div>
         </form>
       </div>
