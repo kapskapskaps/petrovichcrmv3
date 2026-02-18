@@ -1,0 +1,38 @@
+
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    container_name: tutor-crm-frontend
+
+  # --- In a real application, you would uncomment and configure these services ---
+  #
+  # backend:
+  #   build: ./backend # Assumes a 'backend' folder with its own Dockerfile
+  #   ports:
+  #     - "3001:3001"
+  #   environment:
+  #     DATABASE_URL: postgres://user:password@db:5432/tutorcrm
+  #   depends_on:
+  #     - db
+  #   container_name: tutor-crm-backend
+  #
+  # db:
+  #   image: postgres:13
+  #   environment:
+  #     POSTGRES_USER: user
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_DB: tutorcrm
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   container_name: tutor-crm-db
+
+# volumes:
+#   postgres_data:
