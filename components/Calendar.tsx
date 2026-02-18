@@ -41,8 +41,8 @@ const Calendar: React.FC<CalendarProps> = ({ startOfWeek, lessons, onSelectLesso
       {/* Колонка времени */}
       <div className="col-start-1 col-end-2 row-start-2 row-end-[-1] border-r dark:border-gray-600">
         {hours.map(hour => (
-          <div key={hour} className="relative flex items-center justify-center h-16 text-xs text-gray-400 dark:text-gray-500">
-            <span className="absolute top-0 -translate-y-1/2">{`${hour.toString().padStart(2, '0')}:00`}</span>
+          <div key={hour} className="relative flex items-start justify-center h-16 text-xs text-gray-400 dark:text-gray-500">
+            <span className="-translate-y-1/2">{`${hour.toString().padStart(2, '0')}:00`}</span>
           </div>
         ))}
       </div>
