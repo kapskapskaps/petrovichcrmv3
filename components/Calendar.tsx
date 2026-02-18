@@ -18,6 +18,9 @@ const Calendar: React.FC<CalendarProps> = ({ startOfWeek, lessons, onSelectLesso
   const weekDays = getWeekDays(startOfWeek);
   const hours = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => i + START_HOUR);
   const totalHours = hours.length;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
 
   // Фильтруем уроки, чтобы показывать только те, что в рабочем диапазоне
   const visibleLessons = lessons.filter(lesson => {
@@ -31,12 +34,17 @@ const Calendar: React.FC<CalendarProps> = ({ startOfWeek, lessons, onSelectLesso
       <div className="sticky top-0 z-10 p-2 text-xs text-center text-gray-500 bg-gray-50 dark:bg-gray-700 dark:text-gray-400 border-r border-b dark:border-gray-600"></div>
 
       {/* Заголовки дней */}
-      {weekDays.map((day, index) => (
-        <div key={index} className="sticky top-0 z-10 p-2 text-center bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
-          <div className="text-sm font-medium text-gray-700 capitalize dark:text-gray-300">{day.toLocaleString('ru-RU', { weekday: 'short' })}</div>
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">{day.getDate()}</div>
-        </div>
-      ))}
+      {weekDays.map((day, index) => {
+        const isToday = day.toDateString() === new Date().toDateString();
+        return (
+            <div key={index} className="sticky top-0 z-10 p-2 text-center bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
+              <div className="text-sm font-medium text-gray-700 capitalize dark:text-gray-300">{day.toLocaleString('ru-RU', { weekday: 'short' })}</div>
+              <div className={`mx-auto mt-1 flex h-8 w-8 items-center justify-center rounded-full text-lg font-semibold ${isToday ? 'bg-red-500 text-white' : 'text-gray-900 dark:text-white'}`}>
+                {day.getDate()}
+              </div>
+            </div>
+        )
+      })}
       
       {/* Колонка времени */}
       <div className="col-start-1 col-end-2 row-start-2 row-end-[-1] border-r dark:border-gray-600">
